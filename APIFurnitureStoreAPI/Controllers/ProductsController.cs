@@ -3,54 +3,51 @@ using APIFurnitureStore.Share;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Policy;
 
 namespace APIFurnitureStoreAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ClientsController : ControllerBase
+    public class ProductsController : ControllerBase
     {
         private readonly APIFurnitureStoreContext _context;
-        public ClientsController(APIFurnitureStoreContext context)
+        public ProductsController(APIFurnitureStoreContext context)
         {
-            _context = context;
             _context = context;
         }
         [HttpGet]
         public async Task<IActionResult> Get()
-        {   
-            var lista = await _context.Clients.ToListAsync();
+        {
+            var lista = await _context.Products.ToListAsync();
             return Ok(lista);
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDetails(int id)
         {
-            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
-            if(client == null) return NotFound();
+            var client = await _context.Products.FirstOrDefaultAsync((p) => p.Id == id);
+            if (client == null) return NotFound();
             return Ok(client);
         }
-
         [HttpPost]
-        public async Task<IActionResult> Post(Client client)
+        public async Task<IActionResult> Post(Product product)
         {
-            await _context.Clients.AddAsync(client);
+            await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
-            return CreatedAtAction("Post", client.Id, client);
+            return CreatedAtAction("Post", product.Id, product);
         }
-
         [HttpPut]
-        public async Task<IActionResult> Put(Client client)
+        public async Task<IActionResult> Put(Product product)
         {
-            _context.Clients.Update(client);
+            _context.Products.Update(product);
             await _context.SaveChangesAsync();
             return NoContent();
         }
-
         [HttpDelete]
-        public async Task<IActionResult> Delete(Client client)
+        public async Task<IActionResult> Delete(Product product)
         {
-            if (client == null) return NotFound();
-            _context.Clients.Remove(client);
+            if(product == null) return NotFound();
+            _context.Products.Remove(product);
             await _context.SaveChangesAsync();
             return NoContent();
         }
