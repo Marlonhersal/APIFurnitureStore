@@ -14,7 +14,6 @@ namespace APIFurnitureStoreAPI.Controllers
         public ClientsController(APIFurnitureStoreContext context)
         {
             _context = context;
-            _context = context;
         }
         [HttpGet]
         public async Task<IActionResult> Get()

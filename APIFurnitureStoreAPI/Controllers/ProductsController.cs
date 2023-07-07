@@ -29,6 +29,13 @@ namespace APIFurnitureStoreAPI.Controllers
             if (client == null) return NotFound();
             return Ok(client);
         }
+
+        [HttpGet("GetByCategory/{productCategoryId}")]
+        public async Task<IEnumerable<Product>> GetByCategory(int productCategoryId){
+            return await _context.Products
+                .Where(p => p.ProductCategoryId == productCategoryId)
+                .ToListAsync();             
+        }
         [HttpPost]
         public async Task<IActionResult> Post(Product product)
         {
