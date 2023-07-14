@@ -34,13 +34,33 @@ namespace APIFurnitureStoreAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(Order order)
         {
-            if(order.OrderDetails == null) return BadRequest("Order should have at one details");
+            if (order == null) return NotFound();
+            if (order.OrderDetails == null) return BadRequest("Order should have at one details");
 
             await _context.Orders.AddAsync(order);
             await _context.OrderDetails.AddRangeAsync(order.OrderDetails);
      
             await _context.SaveChangesAsync();
             return CreatedAtAction("Post", order.Id, order);
-        }   
+        }
+        [HttpPut]
+        public async Task<IActionResult> Put(Order order)
+        {
+            if (order == null) return NotFound();
+            if (order.Id <= 0) return NotFound();
+            var existingOrder = await _context.Orders.Include(o => o.OrderDetails).FirstOrDefaultAsync(o => o.Id == order.Id);
+            if(existingOrder == null) return NotFound();
+            existingOrder.OrderNumber = order.OrderNumber;
+            existingOrder.ClientId = order.ClientId;
+            existingOrder.OrderDate = order.OrderDate;
+            existingOrder.DeliveryDate = order.DeliveryDate;
+
+            _context.OrderDetails.RemoveRange(existingOrder.OrderDetails);
+            _context.Orders.Update(existingOrder);
+            _context.OrderDetails.AddRange(existingOrder.OrderDetails);
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }
