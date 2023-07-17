@@ -43,6 +43,7 @@ namespace APIFurnitureStoreAPI.Controllers
             await _context.SaveChangesAsync();
             return CreatedAtAction("Post", order.Id, order);
         }
+
         [HttpPut]
         public async Task<IActionResult> Put(Order order)
         {
@@ -51,15 +52,23 @@ namespace APIFurnitureStoreAPI.Controllers
             var existingOrder = await _context.Orders.Include(o => o.OrderDetails).FirstOrDefaultAsync(o => o.Id == order.Id);
             if(existingOrder == null) return NotFound();
             existingOrder.OrderNumber = order.OrderNumber;
-            existingOrder.ClientId = order.ClientId;
             existingOrder.OrderDate = order.OrderDate;
             existingOrder.DeliveryDate = order.DeliveryDate;
-
+            existingOrder.ClientId = order.ClientId;
             _context.OrderDetails.RemoveRange(existingOrder.OrderDetails);
             _context.Orders.Update(existingOrder);
-            _context.OrderDetails.AddRange(existingOrder.OrderDetails);
-
+            _context.OrderDetails.AddRange(order.OrderDetails);
             await _context.SaveChangesAsync();
+            return NoContent();
+        }
+        [HttpDelete]
+        public async Task<IActionResult> Delete(Order order)
+        {
+            if (order == null) return NotFound();
+            var existingOrder = await _context.Orders.Include(o => o.OrderDetails).FirstOrDefaultAsync(o => o.Id == order.Id);
+            if (existingOrder == null) return NotFound();
+            _context.OrderDetails.RemoveRange(existingOrder.OrderDetails);
+            _context.Orders.Remove(existingOrder);
             return NoContent();
         }
     }
