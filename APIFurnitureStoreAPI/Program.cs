@@ -1,6 +1,7 @@
 using APIFurnitureStore.Data;
 using APIFurnitureStoreAPI.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -41,9 +42,15 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddDefaultIdentity<IdentityUser>(
+    options =>
+        options.SignIn.RequireConfirmedAccount = false
+    )
+    .AddEntityFrameworkStores<APIFurnitureStoreContext>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
