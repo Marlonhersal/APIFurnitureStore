@@ -27,6 +27,7 @@ namespace APIFurnitureStoreAPI.Controllers
             _jwtConfig = jwtConfig.Value;
         }
 
+        [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrarionRequestDto request) {
             if (!ModelState.IsValid) return BadRequest();
             var emailExists = await _userManager.FindByEmailAsync(request.EmailAdress);
@@ -75,7 +76,7 @@ namespace APIFurnitureStoreAPI.Controllers
             //});
         }
 
-        public string GenerateToken(IdentityUser user)
+        private string GenerateToken(IdentityUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
@@ -85,6 +86,7 @@ namespace APIFurnitureStoreAPI.Controllers
                 {
                     new Claim("Id", user.Id),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToUniversalTime().ToString())
                 }

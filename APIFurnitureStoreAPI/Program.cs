@@ -1,4 +1,4 @@
-using APIFurnitureStore.Data;
+    using APIFurnitureStore.Data;
 using APIFurnitureStoreAPI.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
