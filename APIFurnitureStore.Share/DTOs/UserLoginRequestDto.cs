@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 
 namespace APIFurnitureStore.Share.DTOs
 {
-    public class UserRegistrationRequestDto
+    public class UserLoginRequestDto
     {
         [Required]
-        public string Name { get; set; }
+        public string Email { get; set; }
         [Required]
         public string EmailAddress { get; set; }
         [Required]
         public string Password { get; set; }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using APIFurnitureStore.Share.Auth;
+using APIFurnitureStore.Share.DTOs;
 using APIFurnitureStoreAPI.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -20,18 +21,49 @@ namespace APIFurnitureStoreAPI.Controllers
         private readonly JwtConfig _jwtConfig;
         public AuthenticationController(
             UserManager<IdentityUser> userManager,
-            IOptions<JwtConfig>  jwtConfig)
+            IOptions<JwtConfig> jwtConfig)
         {
 
             _userManager = userManager;
             _jwtConfig = jwtConfig.Value;
         }
 
-        [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody] UserRegistrarionRequestDto request) {
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginRequestDto request)
+        {
             if (!ModelState.IsValid) return BadRequest();
-            var emailExists = await _userManager.FindByEmailAsync(request.EmailAdress);
-            if(emailExists != null) return BadRequest(new AuthResult()
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser == null)
+                return BadRequest(new AuthResult
+                {
+                    Errors = new List<string> { "Invalid Payload" },
+                    Result = false
+                });
+            
+
+            var checkUserAndPass = await _userManager.CheckPasswordAsync(existingUser, request.Password);
+            if (!checkUserAndPass) 
+                return BadRequest(new AuthResult
+                {
+                    Errors = new List<string> { "Invalid Credentials" },
+                    Result = false
+                });
+
+            var token = GenerateToken(existingUser);
+            return Ok(
+                new AuthResult {
+                    Token = token,
+                    Result = true
+                 }
+                );
+        }
+
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register([FromBody] UserRegistrationRequestDto request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            var emailExists = await _userManager.FindByEmailAsync(request.EmailAddress);
+            if (emailExists != null) return BadRequest(new AuthResult()
             {
                 Result = false,
                 Errors = new List<string>()
@@ -42,12 +74,13 @@ namespace APIFurnitureStoreAPI.Controllers
 
             var user = new IdentityUser()
             {
-                Email = request.EmailAdress,
-                UserName = request.EmailAdress
+                Email = request.EmailAddress,
+                UserName = request.EmailAddress,
+            
             };
-
-            var isCreated = await _userManager.CreateAsync(user);
-            if(isCreated.Succeeded) {
+            var isCreated = await _userManager.CreateAsync(user, request.Password);
+            if (isCreated.Succeeded)
+            {
                 var token = GenerateToken(user);
                 return Ok(
                     new AuthResult()
@@ -99,6 +132,7 @@ namespace APIFurnitureStoreAPI.Controllers
 
             return jwtTokenHandler.WriteToken(token);
         }
+
 
     }
 }
