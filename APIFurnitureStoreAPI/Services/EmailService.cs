@@ -25,8 +25,8 @@ namespace APIFurnitureStoreAPI.Services
 
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync(_smtpSettings.Sever);
-                    await client.AuthenticateAsync(_smtpSettings.UserName, _smtpSettings.Password);
+                    await client.ConnectAsync(_smtpSettings.Server);
+                    await client.AuthenticateAsync(_smtpSettings.Username, _smtpSettings.Password);
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
                 }

@@ -1,7 +1,9 @@
-    using APIFurnitureStore.Data;
+using APIFurnitureStore.Data;
 using APIFurnitureStoreAPI.Configuration;
+using APIFurnitureStoreAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -15,32 +17,45 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(
-    (c) =>
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
-        c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-        {
-            Title = "Furniture_Store_API",
-            Version = "v1",
-        });
-        c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
-        {
-            Name = "Authorization",
-            Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-            Scheme = "Bearer",
-            BearerFormat = "JWT",
-            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-            Description = "JWT Authorization header using the Beare scheme.  Bearer + token",
-        });
-      
+        Title = "Furniture_Store_API",
+        Version = "v1"
     });
-
-builder.Services.AddDbContext<APIFurnitureStoreContext>(options => 
-    options.UseSqlite(builder.Configuration.GetConnectionString("APIFurnitureStoreContext")));
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = $@"JWT Authorization header using the Bearer scheme. 
+                        \r\n\r\n Enter prefix (Bearer), space, and then your token. 
+                        Example: 'Bearer 1231233kjsdlkajdksad'"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            new OpenApiSecurityScheme {
+            Reference = new OpenApiReference{
+                Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string [] { }
+        }
+    });
+});
+builder.Services.AddDbContext<APIFurnitureStoreContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("APIFurnitureStoreContext")));
 
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
 
+//Email
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.AddSingleton<IEmailSender, EmailService>();
+
 
 builder.Services.AddAuthentication(options =>
 {
