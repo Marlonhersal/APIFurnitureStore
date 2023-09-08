@@ -21,7 +21,7 @@ namespace APIFurnitureStoreAPI.Services
                 message.From.Add(new MailboxAddress(_smtpSettings.SenderName, _smtpSettings.SenderEmail));
                 message.To.Add(new MailboxAddress("", email));
                 message.Subject = subject;
-                message.Body = new TextPart(htmlMessage);
+                message.Body = new TextPart("html") { Text = htmlMessage };
 
                 using (var client = new SmtpClient())
                 {

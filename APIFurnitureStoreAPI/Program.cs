@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -33,7 +34,7 @@ builder.Services.AddSwaggerGen(c =>
         In = ParameterLocation.Header,
         Description = $@"JWT Authorization header using the Bearer scheme. 
                         \r\n\r\n Enter prefix (Bearer), space, and then your token. 
-                        Example: 'Bearer 1231233kjsdlkajdksad'"
+                        Example: 'Bearer 2h37hs23hd781hs'"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement {
         {
@@ -55,8 +56,17 @@ builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfi
 //Email
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddSingleton<IEmailSender, EmailService>();
-
-
+var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("JwtConfig:Secret").Value);
+var tokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+{
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(key),
+    ValidateIssuer = false,
+    ValidateAudience = false,
+    RequireExpirationTime = false,
+    ValidateLifetime = true
+};
+builder.Services.AddSingleton(tokenValidationParameters);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,17 +75,8 @@ builder.Services.AddAuthentication(options =>
 })
     .AddJwtBearer((jwt) =>
     {
-        var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("JwtConfig:Secret").Value);
         jwt.SaveToken = true;
-        jwt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            RequireExpirationTime = false,
-            ValidateLifetime = true
-        };
+        jwt.TokenValidationParameters = tokenValidationParameters;
     });
 
 builder.Services.AddDefaultIdentity<IdentityUser>(
@@ -83,6 +84,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(
         options.SignIn.RequireConfirmedAccount = false
     )
     .AddEntityFrameworkStores<APIFurnitureStoreContext>();
+
+
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
