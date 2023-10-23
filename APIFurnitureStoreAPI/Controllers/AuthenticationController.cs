@@ -247,7 +247,7 @@ namespace APIFurnitureStoreAPI.Controllers
                 }
                 var storedToken =await _context.RefreshToken.
                     FirstOrDefaultAsync(t => t.Token == tokenRequest.RefreshToken);
-                if(storedToken.IdUsed || storedToken.IsRevoked)
+                if(storedToken == null || storedToken.IdUsed || storedToken.IsRevoked)
                 {
                     throw new Exception("Invalid Token");
                 }
